@@ -1,34 +1,44 @@
 # Leasebase Mobile (Standalone Repo)
 
-This repository is intended to host the **standalone mobile client** for the Leasebase platform (for example, a React Native or Expo application).
+This repository hosts the **mobile client** for the Leasebase platform (for example, a React Native or Expo application).
 
-Currently, the primary implementation work and backend logic are defined in the **monorepo sibling** `../leasebase`, which contains:
-- The backend API (`services/api` – NestJS + Prisma + PostgreSQL)
-- The monorepo-level mobile workspace (`apps/mobile`, reserved for future use)
-- Infrastructure and architecture documentation
+It is intentionally **mobile‑only**:
+- No backend API code lives here.
+- No web UI code lives here.
 
-Until this repository is populated with real mobile application code, treat it mainly as documentation and a pointer to the monorepo.
+The mobile client talks to the backend API running from the separate backend repo:
+- Backend: `leasebase` (a.k.a. `leasebase-backend`), `services/api` (NestJS + Prisma + PostgreSQL)
+
+Until this repository is populated with full mobile application code, treat it as the home for all mobile‑specific assets (screens, navigation, native configuration) and as a client of the backend API.
 
 ---
 
 ## Working with Leasebase locally
 
-To run the full stack locally (backend + web; future mobile), follow the instructions in:
+To run the full stack locally (backend + mobile; optional web), you will work with **two (or three) repos** side by side:
 
-- `../leasebase/README.md`
+- Backend: `../leasebase` (backend API + DB)
+- Mobile: this repo (`leasebase-mobile`)
+- (Optional) Web: `../leasebase-web`
 
-In brief, from `../leasebase` you will:
+Example workflow (once mobile code exists):
 
 ```bash path=null start=null
+# 1) In ../leasebase (backend)
 cd ../leasebase
 npm install
-npm run dev:api     # start the API on localhost:4000
-# (once web/mobile exist)
-npm run dev:web
-npm run dev:mobile
+docker-compose up -d db
+npm run migrate
+npm run seed
+npm run dev:api    # API on http://localhost:4000
+
+# 2) In ../leasebase-mobile (mobile client)
+cd ../leasebase-mobile
+npm install
+npm start          # or expo start / react-native start, depending on stack
 ```
 
-The mobile client code will eventually live under `../leasebase/apps/mobile` (or inside this repo once it is bootstrapped as a full project).
+The mobile client code will live entirely in this repo and will connect to the backend API via HTTP.
 
 ---
 
@@ -83,8 +93,9 @@ From the mobile client perspective, AWS deployment mainly affects **which API ba
 
 ## Relevant information for contributors
 
+- **What belongs here?**  All mobile concerns: screens, navigation, native modules/config, mobile-specific state and UX.
+- **What does *not* belong here?**  Backend services, database schema/migrations, web UI code.
 - **Where is the backend?**  In `../leasebase/services/api`.
-- **Where is the current mobile code?**  The monorepo reserves `../leasebase/apps/mobile`, but this standalone repo has not yet been bootstrapped.
-- **Where do I add new features now?**  Until this repo has real mobile code, prefer working in the monorepo and its `apps/mobile` workspace.
+- **Where is the web app?**  In the separate `../leasebase-web` repo.
 
 Once this repository is initialized with a concrete mobile project, this README should be updated with precise dev, build, and release instructions appropriate to that stack.
