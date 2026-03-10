@@ -6,8 +6,8 @@ It is intentionally **mobile‑only**:
 - No backend API code lives here.
 - No web UI code lives here.
 
-The mobile client talks to the backend API running from the separate backend repo:
-- Backend: `leasebase` (a.k.a. `leasebase-backend`), `services/api` (NestJS + Prisma + PostgreSQL)
+The mobile client talks to the local dev API running from a separate repo:
+- Schema & Dev API: `leasebase-schema-dev`, `services/api` (NestJS + Prisma + PostgreSQL)
 
 Until this repository is populated with full mobile application code, treat it as the home for all mobile‑specific assets (screens, navigation, native configuration) and as a client of the backend API.
 
