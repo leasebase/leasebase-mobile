@@ -6,8 +6,7 @@ It is intentionally **mobile‑only**:
 - No backend API code lives here.
 - No web UI code lives here.
 
-The mobile client talks to the local dev API running from a separate repo:
-- Schema & Dev API: `leasebase-schema-dev`, `services/api` (NestJS + Prisma + PostgreSQL)
+The mobile client talks to the backend API provided by the v2 microservices (10 Express services on ECS Fargate). For local development, `leasebase-schema-dev` provides a transitional NestJS dev API on port 4000.
 
 Until this repository is populated with full mobile application code, treat it as the home for all mobile‑specific assets (screens, navigation, native configuration) and as a client of the backend API.
 
@@ -15,17 +14,18 @@ Until this repository is populated with full mobile application code, treat it a
 
 ## Working with Leasebase locally
 
-To run the full stack locally (backend + mobile; optional web), you will work with **two (or three) repos** side by side:
+To run the full stack locally (backend + mobile; optional web), you will work with multiple repos side by side:
 
-- Backend: `../leasebase` (backend API + DB)
+- Backend (local dev): `../leasebase-schema-dev` (NestJS dev API + Prisma + PostgreSQL)
+- Backend (production): v2 microservices in `../leasebase_all/leasebase-*-service/`
 - Mobile: this repo (`leasebase-mobile`)
 - (Optional) Web: `../leasebase-web`
 
 Example workflow (once mobile code exists):
 
 ```bash path=null start=null
-# 1) In ../leasebase (backend)
-cd ../leasebase
+# 1) In ../leasebase-schema-dev (local dev API)
+cd ../leasebase-schema-dev
 npm install
 docker-compose up -d db
 npm run migrate
@@ -80,14 +80,15 @@ Exact commands will depend on the chosen mobile stack and `package.json` scripts
 
 ## Deploying the backend to AWS
 
-This repository **does not** contain backend code. All backend implementation and deployment steps live in the monorepo `../leasebase`.
+This repository **does not** contain backend code. The backend is a microservices architecture deployed to AWS ECS Fargate.
 
 To deploy or modify the backend on AWS, see:
 
-- `../leasebase/README.md` – "Backend deployment to AWS" section
-- `../leasebase/docs/architecture.md` – detailed system and AWS architecture
+- `../leasebase_all/README.md` – deployment monorepo with CI/CD
+- `../leasebase_all/ARCHITECTURE.md` – full platform architecture
+- `../leasebase-iac/README.md` – Terraform infrastructure
 
-From the mobile client perspective, AWS deployment mainly affects **which API base URL** you configure for your app's environments (dev, staging, prod).
+From the mobile client perspective, AWS deployment mainly affects **which API base URL** you configure for your app’s environments (dev: `https://api.dev.leasebase.ai`, staging, prod).
 
 ---
 
@@ -95,7 +96,7 @@ From the mobile client perspective, AWS deployment mainly affects **which API ba
 
 - **What belongs here?**  All mobile concerns: screens, navigation, native modules/config, mobile-specific state and UX.
 - **What does *not* belong here?**  Backend services, database schema/migrations, web UI code.
-- **Where is the backend?**  In `../leasebase/services/api`.
+- **Where is the backend?**  v2 microservices in `../leasebase_all/leasebase-*-service/`.
 - **Where is the web app?**  In the separate `../leasebase-web` repo.
 
 Once this repository is initialized with a concrete mobile project, this README should be updated with precise dev, build, and release instructions appropriate to that stack.
