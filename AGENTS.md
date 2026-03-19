@@ -5,9 +5,9 @@ This file provides guidance to WARP (warp.dev) when working with code in this re
 ## Repository purpose & related projects
 
 - This repository is **mobile-only** for the Leasebase platform.
-- No backend API code lives here; it resides in the sibling repo `../leasebase` (NestJS + Prisma + PostgreSQL under `services/api`).
+- No backend API code lives here; the backend is a v2 microservices architecture (10 Express services on ECS Fargate). For local dev, `../leasebase-schema-dev` provides a transitional NestJS dev API.
 - No web UI code lives here; that lives in the separate repo `../leasebase-web`.
-- The mobile app is a **client of the backend API** and should communicate with it over HTTP using a configurable base URL (e.g. `http://localhost:4000` in local dev, or environment-specific HTTPS endpoints).
+- The mobile app is a **client of the backend API** and should communicate with it over HTTP using a configurable base URL (e.g. `http://localhost:4000` in local dev, or `https://api.dev.leasebase.ai` in deployed environments).
 
 ## Current state of this repo
 
@@ -17,17 +17,17 @@ This file provides guidance to WARP (warp.dev) when working with code in this re
 
 ## Local development – multi-repo setup
 
-The intended workflow is to run the backend API from `../leasebase` and the mobile app from this repo side by side.
+The intended workflow is to run the backend API from `../leasebase-schema-dev` (transitional dev API) and the mobile app from this repo side by side.
 
-### 1. Start the backend API (in `../leasebase`)
+### 1. Start the backend API (in `../leasebase-schema-dev`)
 
-In the sibling backend repo, a typical local API workflow (per the docs referenced in this README) looks like:
+In the schema-dev repo, a typical local API workflow looks like:
 
 ```bash
-cd ../leasebase
+cd ../leasebase-schema-dev
 npm install
 
-# Start PostgreSQL via Docker (command name may vary by that repo's README)
+# Start PostgreSQL via Docker
 docker-compose up -d db
 
 # Database migrations and seed data
@@ -38,7 +38,7 @@ npm run seed
 npm run dev:api
 ```
 
-When working as an agent in this mobile repo and you need **backend behavior** (API shape, DB schema, etc.), open files in `../leasebase/services/api` and its documentation (e.g. `../leasebase/README.md`, `../leasebase/docs/architecture.md`).
+When working as an agent in this mobile repo and you need **backend behavior** (API shape, DB schema, etc.), consult the v2 microservice repos (`../leasebase_all/leasebase-*-service/`) and `../leasebase_all/ARCHITECTURE.md`.
 
 ### 2. Mobile client (this repo, once initialized)
 
@@ -61,7 +61,7 @@ Once a concrete mobile stack is wired up here (e.g. React Native or Expo), the h
 3. **Configure the API endpoint**:
    - Point the mobile client at the Leasebase API base URL, usually via an `.env` file or config module.
    - Common values (based on the README):
-     - `http://localhost:4000` when the API is running locally in `../leasebase`.
+     - `http://localhost:4000` when the API is running locally via `../leasebase-schema-dev`.
      - Environment-specific URLs (e.g. dev/staging/prod) when connecting to AWS-hosted backends.
 
 4. **Run the app (placeholder until scripts exist)**:
@@ -93,16 +93,16 @@ If the necessary scripts are **not** defined yet, clearly state that to the user
   - Should not contain backend business logic, database access, or infrastructure concerns.
   - Communicates exclusively with the backend via HTTP/HTTPS using a defined API contract.
 
-- **Backend API (`../leasebase`)**
-  - Implements core business logic, persistence (PostgreSQL via Prisma), and integrations.
-  - Exposes HTTP endpoints consumed by this mobile client.
-  - AWS deployment and system architecture are documented in `../leasebase/README.md` and `../leasebase/docs/architecture.md`.
+- **Backend API (v2 microservices)**
+  - 10 Express microservices on ECS Fargate, each using `@leasebase/service-common`.
+  - For local dev, `../leasebase-schema-dev` provides a transitional NestJS API.
+  - AWS deployment and system architecture are documented in `../leasebase_all/ARCHITECTURE.md`.
 
 - **Web app (`../leasebase-web`)**
   - Separately implemented web front-end that also consumes the backend API.
   - Not directly modified from this repo, but useful as a reference for API usage patterns, auth flows, and shared UX concepts.
 
-When agents need a "big picture" view, consider all three repos together: backend (`../leasebase`), mobile (this repo), and web (`../leasebase-web`).
+When agents need a “big picture” view, consider: microservices (`../leasebase_all/leasebase-*-service/`), mobile (this repo), and web (`../leasebase-web`).
 
 ## Guidance for future agents
 
@@ -111,4 +111,4 @@ When agents need a "big picture" view, consider all three repos together: backen
   - Environment variable names for API URLs and auth.
   - Error-handling patterns for API calls.
   - Directory layout for features/domains, if a shared structure emerges.
-- When users ask architecture questions that clearly span mobile + backend, open the relevant files in `../leasebase` instead of trying to infer behavior solely from the mobile client.
+- When users ask architecture questions that clearly span mobile + backend, consult `../leasebase_all/ARCHITECTURE.md` and the relevant microservice repos instead of trying to infer behavior solely from the mobile client.
